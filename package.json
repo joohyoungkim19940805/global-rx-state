@@ -1,0 +1,91 @@
+{
+	"name": "@byeolnaerim/global-rx-state",
+	"version": "0.0.1",
+	"type": "module",
+	"license": "Apache-2.0",
+	"author": "Joohyoung Kim (@oozu1994)",
+	"description": "A tiny global React state primitive powered by RxJS, with named singleton stores, reducer support, and optional persistence.",
+	"keywords": [
+		"react",
+		"rxjs",
+		"state",
+		"global-state",
+		"react-state",
+		"behavior-subject",
+		"persistent-state",
+		"reducer",
+		"indexeddb",
+		"localforage"
+	],
+	"homepage": "https://byeolnaerim.com",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/joohyoungkim19940805/global-rx-state.git"
+	},
+	"bugs": {
+		"url": "https://github.com/joohyoungkim19940805/global-rx-state/issues"
+	},
+	"files": [
+		"dist",
+		"eslint-rules",
+		"LICENSE",
+		"README.md"
+	],
+	"sideEffects": false,
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs",
+			"default": "./dist/index.js"
+		},
+		"./rx-state": {
+			"types": "./dist/rx-state/index.d.ts",
+			"import": "./dist/rx-state/index.js",
+			"require": "./dist/rx-state/index.cjs",
+			"default": "./dist/rx-state/index.js"
+		},
+		"./rx-reducer": {
+			"types": "./dist/rx-reducer/index.d.ts",
+			"import": "./dist/rx-reducer/index.js",
+			"require": "./dist/rx-reducer/index.cjs",
+			"default": "./dist/rx-reducer/index.js"
+		},
+		"./eslint-rules": {
+			"require": "./eslint-rules/index.cjs",
+			"default": "./eslint-rules/index.cjs"
+		},
+		"./eslint-rules/no-tuple-global-rx-state-in-function": {
+			"require": "./eslint-rules/no-tuple-global-rx-state-in-function.cjs",
+			"default": "./eslint-rules/no-tuple-global-rx-state-in-function.cjs"
+		},
+		"./package.json": "./package.json"
+	},
+	"scripts": {
+		"build": "tsup && tsc -p tsconfig.build.json",
+		"dev": "tsup --watch",
+		"prepack": "npm run build"
+	},
+	"peerDependencies": {
+		"react": ">=18.0.0",
+		"rxjs": ">=7"
+	},
+	"dependencies": {
+		"localforage": "^1.10.0"
+	},
+	"devDependencies": {
+		"@types/node": "^25.7.0",
+		"@types/react": "^19.2.15",
+		"esbuild-plugin-preserve-directives": "^0.0.11",
+		"react": "^19.2.6",
+		"rxjs": "^7.8.2",
+		"tsup": "^8.5.1",
+		"typescript": "^6.0.3"
+	},
+	"overrides": {
+		"esbuild": "0.28.0"
+	}
+}
