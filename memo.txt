@@ -6,4 +6,4 @@ npm pack
 npm version patch
 
 배포
-npm publish --tag alpha --access public
+npm publish --access public
