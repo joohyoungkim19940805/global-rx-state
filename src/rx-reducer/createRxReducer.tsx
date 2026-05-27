@@ -3,7 +3,10 @@
 import type { BehaviorSubject } from "rxjs";
 import { makeBaseEntry, makeVolatileEntry, persistNextValue } from "../shared/entry";
 import {
+	clearNamedReturns,
 	deleteDefaultStorageAlias,
+	deleteNamedReturn,
+	globalRxNamedReturnRegistry,
 	globalRxRegistry,
 	listDefaultStorageAliases,
 	makeNamedRegistryKey,
@@ -136,6 +139,10 @@ export function createRxReducer<S, A>(
  * reused. If no alias exists yet, the name defaults to in-memory. The alias is
  * scoped to reducer entries, so createRxState("cart") and createRxReducer("cart")
  * do not collide.
+ *
+ * Named reducer mode is safe to call from React components. The named API object
+ * is cached by registry key, so repeated calls with the same name/storage return
+ * the same dispatch/getter/hook/subject references.
  */
 export function createRxReducer<S, A, N extends string>(
 	initialState: S,
@@ -162,12 +169,23 @@ export function createRxReducer<S, A, N extends string>(
 
 	if (name) {
 		const entry = getOrCreateNamedEntry(initialState, reducer, name, storageOptions);
+		const cached = globalRxNamedReturnRegistry.get(entry.registryKey);
+
+		if (cached) {
+			return cached as NamedDispatch<N, A> &
+				NamedReducerGet<N, S> &
+				NamedReducerUse<N, S> &
+				NamedReducerSubject<N, S> &
+				NamedReducerReady<N>;
+		}
+
 		const obj: Record<string, unknown> = {};
 		obj[`dispatch${cap(name)}`] = entry.dispatch;
 		obj[`get${cap(name)}`] = entry.get;
 		obj[`use${cap(name)}`] = entry.useValue;
 		obj[`${name}Subject`] = entry.subject;
 		obj[`${name}Ready`] = entry.ready;
+		globalRxNamedReturnRegistry.set(entry.registryKey, obj);
 		return obj as NamedDispatch<N, A> &
 			NamedReducerGet<N, S> &
 			NamedReducerUse<N, S> &
@@ -202,6 +220,7 @@ export async function clearRxReducer(
 	if (entry) {
 		entry.subject.complete();
 		globalRxRegistry.delete(registryKey);
+		deleteNamedReturn(registryKey);
 	}
 
 	const adapter = await createStorageAdapter(resolvedStorageOptions);
@@ -217,6 +236,7 @@ export function clearRxReducerAll() {
 			globalRxRegistry.delete(key);
 		}
 	});
+	clearNamedReturns(KIND);
 }
 
 /** Lists currently registered named reducer entries with their storage metadata. */

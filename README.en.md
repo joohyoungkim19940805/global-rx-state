@@ -47,11 +47,34 @@ Anonymous tuple mode does not accept storage options. It has no stable persisten
 
 Named mode uses a global singleton registry keyed by name and storage options.
 
-```ts
+```tsx
 import { createRxState } from "@byeolnaerim/global-rx-state";
 
 export const { setCount, getCount, useCount, countSubject, countReady } =
 	createRxState(0, "count", { storage: "auto" });
+
+//OR
+
+function A_Component(){
+	const {setCountInner} = createRxState(0, "countInner"{storage:"auto"});
+	return (
+		<div>
+			<button onClick={() => setCountInner((prev) => prev + 1)}>
+				{countInner}
+			</button>
+		</div>
+	);
+}
+
+function B_Component(){
+	const {useCountInner} = createRxState(0, "countInner")// is A_Component countInner
+
+	const countInner = useCountInner();
+
+	return (
+		<div><span>current count : {countInner}</span></div>
+	)
+}
 ```
 
 If storage is omitted, the first registered storage alias for the same name is reused. If no alias exists yet, it defaults to in-memory.

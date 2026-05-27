@@ -47,11 +47,34 @@ Anonymous tuple mode는 storage 옵션을 받지 않습니다. 안정적인 pers
 
 Named mode는 name과 storage options를 기준으로 global singleton registry를 사용합니다.
 
-```ts
+```tsx
 import { createRxState } from "@byeolnaerim/global-rx-state";
 
 export const { setCount, getCount, useCount, countSubject, countReady } =
 	createRxState(0, "count", { storage: "auto" });
+
+//OR
+
+function A_Component(){
+	const {setCountInner} = createRxState(0, "countInner"{storage:"auto"});
+	return (
+		<div>
+			<button onClick={() => setCountInner((prev) => prev + 1)}>
+				{countInner}
+			</button>
+		</div>
+	);
+}
+
+function B_Component(){
+	const {useCountInner} = createRxState(0, "countInner")// is A_Component countInner
+
+	const countInner = useCountInner();
+
+	return (
+		<div><span>current count : {countInner}</span></div>
+	)
+}
 ```
 
 storage를 생략하면 같은 name에 대해 처음 등록된 storage alias를 재사용합니다. 만약 storage alias가 없다면 기본값은 `in-memory`입니다.

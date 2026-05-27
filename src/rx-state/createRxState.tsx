@@ -3,7 +3,10 @@
 import type { BehaviorSubject } from "rxjs";
 import { makeBaseEntry, makeVolatileEntry, persistNextValue } from "../shared/entry";
 import {
+	clearNamedReturns,
 	deleteDefaultStorageAlias,
+	deleteNamedReturn,
+	globalRxNamedReturnRegistry,
 	globalRxRegistry,
 	listDefaultStorageAliases,
 	makeNamedRegistryKey,
@@ -130,6 +133,10 @@ export function createRxState<T>(
  * Reusing the same name and storage points to the same BehaviorSubject. If the
  * storage option is omitted, the first registered storage alias for that name is
  * reused. If no alias exists yet, the name defaults to in-memory.
+ *
+ * Named mode is safe to call from React components. The named API object is
+ * cached by registry key, so repeated calls with the same name/storage return
+ * the same setter/getter/hook/subject references.
  */
 export function createRxState<T, N extends string>(
 	defaultValue: T,
@@ -150,12 +157,23 @@ export function createRxState<T, N extends string>(
 
 	if (name) {
 		const entry = getOrCreateNamedEntry(defaultValue, name, storageOptions);
+		const cached = globalRxNamedReturnRegistry.get(entry.registryKey);
+
+		if (cached) {
+			return cached as NamedSet<N, T> &
+				NamedGet<N, T> &
+				NamedUse<N, T> &
+				NamedSubject<N, T> &
+				NamedReady<N>;
+		}
+
 		const obj: Record<string, unknown> = {};
 		obj[`set${cap(name)}`] = entry.set;
 		obj[`get${cap(name)}`] = entry.get;
 		obj[`use${cap(name)}`] = entry.useValue;
 		obj[`${name}Subject`] = entry.subject;
 		obj[`${name}Ready`] = entry.ready;
+		globalRxNamedReturnRegistry.set(entry.registryKey, obj);
 		return obj as NamedSet<N, T> &
 			NamedGet<N, T> &
 			NamedUse<N, T> &
@@ -190,6 +208,7 @@ export async function clearRxState(
 	if (entry) {
 		entry.subject.complete();
 		globalRxRegistry.delete(registryKey);
+		deleteNamedReturn(registryKey);
 	}
 
 	const adapter = await createStorageAdapter(resolvedStorageOptions);
@@ -205,6 +224,7 @@ export function clearRxStateAll() {
 			globalRxRegistry.delete(key);
 		}
 	});
+	clearNamedReturns(KIND);
 }
 
 /** Lists currently registered named state entries with their storage metadata. */

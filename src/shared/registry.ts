@@ -11,13 +11,16 @@ type AnyRxEntry = RxBaseEntry<any>;
 const g = globalThis as typeof globalThis & {
 	__globalRxStateRegistry?: Map<string, AnyRxEntry>;
 	__globalRxStateNameDefaultStorage?: Map<string, Required<RxStateStorageOptions>>;
+	__globalRxStateNamedReturnRegistry?: Map<string, Record<string, unknown>>;
 };
 
 // Keep registries on globalThis so multiple imports and HMR reloads share named state.
 g.__globalRxStateRegistry ??= new Map<string, AnyRxEntry>();
 g.__globalRxStateNameDefaultStorage ??= new Map<string, Required<RxStateStorageOptions>>();
+g.__globalRxStateNamedReturnRegistry ??= new Map<string, Record<string, unknown>>();
 
 export const globalRxRegistry = g.__globalRxStateRegistry;
+export const globalRxNamedReturnRegistry = g.__globalRxStateNamedReturnRegistry;
 const nameDefaultStorage = g.__globalRxStateNameDefaultStorage;
 
 function makeAliasKey(kind: RxRegistryKind, name: string) {
@@ -67,6 +70,20 @@ export function makeNamedRegistryKey(
 	options: Required<RxStateStorageOptions>,
 ) {
 	return `${kind}|named|${getStorageRegistryPart(options)}|${name}`;
+}
+
+/** Removes the cached named API object for a registry entry. */
+export function deleteNamedReturn(registryKey: string) {
+	globalRxNamedReturnRegistry.delete(registryKey);
+}
+
+/** Removes cached named API objects that belong to the given registry kind. */
+export function clearNamedReturns(kind: RxRegistryKind) {
+	Array.from(globalRxNamedReturnRegistry.keys()).forEach((key) => {
+		if (key.startsWith(`${kind}|`)) {
+			globalRxNamedReturnRegistry.delete(key);
+		}
+	});
 }
 
 /** Removes a name's default storage alias when the cleared storage matches it. */
