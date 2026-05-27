@@ -17,7 +17,7 @@
 		"indexeddb",
 		"localforage"
 	],
-	"homepage": "https://byeolnaerim.com",
+	"homepage": "https://byeolnaerim.com/global-rx-state",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/joohyoungkim19940805/global-rx-state.git"
