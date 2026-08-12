@@ -31,13 +31,21 @@ export function normalizeStorageOptions(
 	storageOptions?: RxStateStorageOptions,
 ): Required<RxStateStorageOptions> {
 	return {
-		storage: storageOptions?.storage ?? "in-memory",
+		storage:
+			storageOptions?.storage === "IndexedDB"
+				? "indexeddb"
+				: storageOptions?.storage === "WebSQL"
+					? "websql"
+					: storageOptions?.storage === "localStorage"
+						? "localstorage"
+						: storageOptions?.storage === "sessionStorage"
+							? "sessionstorage"
+							: (storageOptions?.storage ?? "in-memory"),
 		name: storageOptions?.name ?? "rx-state-core",
 		storeName: storageOptions?.storeName ?? "state",
 		keyPrefix: storageOptions?.keyPrefix ?? "rx-state:",
 	};
 }
-
 /**
  * Converts storage options into the storage-scoped part of a registry key.
  *

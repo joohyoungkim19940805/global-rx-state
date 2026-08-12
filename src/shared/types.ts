@@ -14,9 +14,13 @@ export type RxStateStorage =
 	| "in-memory"
 	| "auto"
 	| "indexeddb"
+	| "IndexedDB"
 	| "websql"
+	| "WebSQL"
 	| "localstorage"
-	| "sessionstorage";
+	| "localStorage"
+	| "sessionstorage"
+	| "sessionStorage";
 
 /**
  * Storage options shared by rx-state, rx-reducer, helper APIs, and persistence.
