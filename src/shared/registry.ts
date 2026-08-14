@@ -1,5 +1,5 @@
 import type { RxBaseEntry, RxRegistryKind, RxStateStorageOptions } from "./types";
-import { getStorageRegistryPart, normalizeStorageOptions } from "./storage";
+import { getPersistedItemKey, getStorageRegistryPart, normalizeStorageOptions } from "./storage";
 
 /**
  * The registry stores entries with different value types in the same Map.
@@ -70,6 +70,24 @@ export function makeNamedRegistryKey(
 	options: Required<RxStateStorageOptions>,
 ) {
 	return `${kind}|named|${getStorageRegistryPart(options)}|${name}`;
+}
+
+/** Returns every registered storage configuration for one named entry. */
+export function listRegisteredStorageOptions(kind: RxRegistryKind, name: string) {
+	const options = new Map<string, Required<RxStateStorageOptions>>();
+
+	globalRxRegistry.forEach((entry, registryKey) => {
+		if (
+			registryKey.startsWith(`${kind}|named|`) &&
+			entry.storageOptions &&
+			entry.storageKey ===
+				getPersistedItemKey(entry.storageOptions.keyPrefix, kind, name)
+		) {
+			options.set(getStorageRegistryPart(entry.storageOptions), entry.storageOptions);
+		}
+	});
+
+	return Array.from(options.values());
 }
 
 /** Removes the cached named API object for a registry entry. */

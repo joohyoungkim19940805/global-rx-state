@@ -9,10 +9,17 @@ import {
 	globalRxNamedReturnRegistry,
 	globalRxRegistry,
 	listDefaultStorageAliases,
+	listRegisteredStorageOptions,
 	makeNamedRegistryKey,
 	resolveNamedStorageOptions,
 } from "../shared/registry";
-import { createStorageAdapter } from "../shared/storage";
+import {
+	createStorageAdapter,
+	findRxStorages,
+	getPersistedItemKey,
+	getRxStorageInfo,
+	normalizeStorageOptions,
+} from "../shared/storage";
 import type { RxStateStorageOptions } from "../shared";
 import type {
 	NamedDispatch,
@@ -208,6 +215,24 @@ export function getRxReducerSubject<S = unknown>(
 	return entry?.subject;
 }
 
+/** Returns the concrete storage backends that currently contain a named reducer. */
+export function findRxReducerStorages(name: string) {
+	return findRxStorages(KIND, name, listRegisteredStorageOptions(KIND, name));
+}
+
+/** Returns every confirmed storage location for a named reducer. */
+export function getRxReducerStorageInfo(
+	name: string,
+	storageOptions?: RxStateStorageOptions,
+) {
+	return getRxStorageInfo(
+		KIND,
+		name,
+		listRegisteredStorageOptions(KIND, name),
+		storageOptions,
+	);
+}
+
 /** Clears a named reducer entry and removes its persisted value. */
 export async function clearRxReducer(
 	name: string,
@@ -226,6 +251,18 @@ export async function clearRxReducer(
 	const adapter = await createStorageAdapter(resolvedStorageOptions);
 	await adapter.removeItem(`${resolvedStorageOptions.keyPrefix}${KIND}:${name}`);
 	deleteDefaultStorageAlias(KIND, name, resolvedStorageOptions);
+}
+
+export async function hasRxReducer(
+	name: string,
+	storageOptions: RxStateStorageOptions,
+) {
+	const options = normalizeStorageOptions(storageOptions);
+	const adapter = await createStorageAdapter(options);
+
+	return adapter.hasItem(
+		getPersistedItemKey(options.keyPrefix, KIND, name),
+	);
 }
 
 /** Completes and removes every named reducer entry from the registry. */

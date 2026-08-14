@@ -9,10 +9,17 @@ import {
 	globalRxNamedReturnRegistry,
 	globalRxRegistry,
 	listDefaultStorageAliases,
+	listRegisteredStorageOptions,
 	makeNamedRegistryKey,
 	resolveNamedStorageOptions,
 } from "../shared/registry";
-import { createStorageAdapter } from "../shared/storage";
+import {
+	createStorageAdapter,
+	findRxStorages,
+	getPersistedItemKey,
+	getRxStorageInfo,
+	normalizeStorageOptions,
+} from "../shared/storage";
 import type { RxStateStorageOptions } from "../shared";
 import type {
 	NamedGet,
@@ -194,6 +201,37 @@ export function getRxSubject<T = unknown>(
 	const registryKey = makeNamedRegistryKey(KIND, name, resolvedStorageOptions);
 	const entry = globalRxRegistry.get(registryKey) as RxStateEntry<T> | undefined;
 	return entry?.subject;
+}
+
+/** Returns whether a named state exists in the specified storage. */
+export async function hasRxState(
+	name: string,
+	storageOptions: RxStateStorageOptions,
+) {
+	const options = normalizeStorageOptions(storageOptions);
+	const adapter = await createStorageAdapter(options);
+
+	return adapter.hasItem(
+		getPersistedItemKey(options.keyPrefix, KIND, name),
+	);
+}
+
+/** Returns the concrete storage backends that currently contain a named state. */
+export function findRxStateStorages(name: string) {
+	return findRxStorages(KIND, name, listRegisteredStorageOptions(KIND, name));
+}
+
+/** Returns every confirmed storage location for a named state. */
+export function getRxStateStorageInfo(
+	name: string,
+	storageOptions?: RxStateStorageOptions,
+) {
+	return getRxStorageInfo(
+		KIND,
+		name,
+		listRegisteredStorageOptions(KIND, name),
+		storageOptions,
+	);
 }
 
 /** Clears a named state entry and removes its persisted value. */

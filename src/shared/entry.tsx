@@ -98,6 +98,7 @@ export function makeBaseEntry<T>(params: {
 		storage: params.storageOptions.storage,
 		registryKey: params.registryKey,
 		storageKey,
+		storageOptions: params.storageOptions,
 	};
 }
 

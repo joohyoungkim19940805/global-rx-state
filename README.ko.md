@@ -244,6 +244,64 @@ IndexedDB > WebSQL > localStorage
 
 `ready`는 persistent storage hydration이 끝난 뒤 resolve되는 Promise입니다. React hook은 hydration 이후 자동으로 업데이트됩니다. 복구된 값을 기준으로 다음 로직을 실행해야 할 때만 `ready`를 사용하세요.
 
+## Storage 유틸리티
+
+Named state의 저장 여부와 저장 위치는 세 가지 유틸리티로 확인할 수 있습니다.
+
+### `hasRxState`
+
+지정한 storage 설정에 해당 named state가 저장되어 있는지 확인합니다.
+
+```ts
+import { hasRxState } from "@byeolnaerim/global-rx-state";
+
+await hasRxState("count", { storage: "auto" });
+// Promise<boolean>
+```
+
+### `findRxStateStorages`
+
+해당 named state가 실제로 존재하는 storage backend를 반환합니다. 같은 name이 여러 storage에 있으면 확인된 backend를 중복 없이 모두 반환합니다.
+
+```ts
+import { findRxStateStorages } from "@byeolnaerim/global-rx-state";
+
+await findRxStateStorages("count");
+// Promise<RxStateResolvedStorage[]>
+// 예: ["indexeddb", "localstorage"]
+```
+
+### `getRxStateStorageInfo`
+
+해당 named state가 존재하는 모든 저장 위치의 상세 정보를 반환합니다. 같은 name이 여러 storage 설정에 존재할 수 있으므로 결과는 항상 배열입니다.
+
+```ts
+import { getRxStateStorageInfo } from "@byeolnaerim/global-rx-state";
+
+await getRxStateStorageInfo("count");
+
+await getRxStateStorageInfo("count", { storage: "indexeddb" });
+// Promise<RxStateStorageInfo[]>
+```
+
+각 `RxStateStorageInfo`에는 다음 정보가 포함됩니다.
+
+```ts
+interface RxStateStorageInfo {
+	key: string;
+	storageKey: string;
+	fullKey: string;
+	storage: RxStateResolvedStorage;
+	name: string;
+	storeName: string;
+	keyPrefix: string;
+}
+```
+
+`storageKey`는 storage adapter/localForage instance에 전달되는 item key입니다. `fullKey`는 backend가 flat key를 직접 노출하는 경우의 전체 key입니다. `storage`에는 실제 backend가 들어가므로 `auto`를 사용한 경우에도 localForage가 실제 선택한 driver가 반환됩니다.
+
+Reducer도 동일하게 `hasRxReducer`, `findRxReducerStorages`, `getRxReducerStorageInfo`를 제공합니다.
+
 ## ESLint rule
 
 이 패키지는 함수/컴포넌트 내부에서 anonymous tuple mode를 사용하는 것을 막기 위한 작은 ESLint rule을 포함합니다.

@@ -1,7 +1,18 @@
 import type { BehaviorSubject } from "rxjs";
-import type { RxBaseEntry, RxStateStorage, RxStateStorageOptions } from "../shared";
+import type {
+	RxBaseEntry,
+	RxStateResolvedStorage,
+	RxStateStorage,
+	RxStateStorageInfo,
+	RxStateStorageOptions,
+} from "../shared";
 
-export type { RxStateStorage, RxStateStorageOptions };
+export type {
+	RxStateResolvedStorage,
+	RxStateStorage,
+	RxStateStorageInfo,
+	RxStateStorageOptions,
+};
 
 /**
  * Reducer function used by createRxReducer.

@@ -22,6 +22,32 @@ export type RxStateStorage =
 	| "sessionstorage"
 	| "sessionStorage";
 
+/** Concrete storage backend after aliases and auto driver selection are resolved. */
+export type RxStateResolvedStorage =
+	| "in-memory"
+	| "indexeddb"
+	| "websql"
+	| "localstorage"
+	| "sessionstorage";
+
+/** Detailed location of one named state/reducer value. */
+export interface RxStateStorageInfo {
+	/** Name passed to createRxState/createRxReducer. */
+	key: string;
+	/** Item key passed to the storage adapter/localForage instance. */
+	storageKey: string;
+	/** Physical flat key when the backend exposes one; otherwise storageKey. */
+	fullKey: string;
+	/** Concrete backend. auto is resolved to the driver actually in use. */
+	storage: RxStateResolvedStorage;
+	/** localForage database name. */
+	name: string;
+	/** localForage store name. */
+	storeName: string;
+	/** Prefix used to build storageKey. */
+	keyPrefix: string;
+}
+
 /**
  * Storage options shared by rx-state, rx-reducer, helper APIs, and persistence.
  *
@@ -64,6 +90,7 @@ export interface RxBaseEntry<T> {
 	storage: RxStateStorage;
 	registryKey: string;
 	storageKey: string;
+	storageOptions?: Required<RxStateStorageOptions>;
 }
 
 /** Registry namespace. Different namespaces can reuse the same name safely. */
