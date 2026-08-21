@@ -165,6 +165,64 @@ IndexedDB > WebSQL > localStorage
 
 `ready` is a Promise that resolves after persistent storage hydration finishes. React hooks update automatically after hydration; use `ready` only when code must wait for the restored value before continuing.
 
+## Storage utilities
+
+Named state storage can be checked with three utilities.
+
+### `hasRxState`
+
+Checks whether the named state exists in the specified storage configuration.
+
+```ts
+import { hasRxState } from "@byeolnaerim/global-rx-state";
+
+await hasRxState("count", { storage: "auto" });
+// Promise<boolean>
+```
+
+### `findRxStateStorages`
+
+Returns the concrete storage backends where the named state currently exists. If the same name exists in more than one storage, all matching backends are returned once.
+
+```ts
+import { findRxStateStorages } from "@byeolnaerim/global-rx-state";
+
+await findRxStateStorages("count");
+// Promise<RxStateResolvedStorage[]>
+// e.g. ["indexeddb", "localstorage"]
+```
+
+### `getRxStateStorageInfo`
+
+Returns detailed storage information for every matching location. The result is always an array because the same name can exist in multiple storage configurations.
+
+```ts
+import { getRxStateStorageInfo } from "@byeolnaerim/global-rx-state";
+
+await getRxStateStorageInfo("count");
+
+await getRxStateStorageInfo("count", { storage: "indexeddb" });
+// Promise<RxStateStorageInfo[]>
+```
+
+Each `RxStateStorageInfo` item contains:
+
+```ts
+interface RxStateStorageInfo {
+	key: string;
+	storageKey: string;
+	fullKey: string;
+	storage: RxStateResolvedStorage;
+	name: string;
+	storeName: string;
+	keyPrefix: string;
+}
+```
+
+`storageKey` is the item key used by the storage adapter/localForage instance. `fullKey` is the full flat key when the backend exposes one. `storage` contains the concrete backend, so `auto` is returned as the driver actually selected by localForage.
+
+The reducer API provides the same three utilities as `hasRxReducer`, `findRxReducerStorages`, and `getRxReducerStorageInfo`.
+
 ## ESLint rule
 
 The package includes a small ESLint rule that prevents anonymous tuple mode inside functions/components.
